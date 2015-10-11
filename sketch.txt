@@ -1,0 +1,17 @@
+Okay, how do I wanna organize this thing?
+
+I know I'm gonna need a board of squares, each of which are one of six colors:
+  Purple, pink, orange, yellow, green, blue.
+
+It's a 12x12 grid in the game, but we're gonna abstract that.
+There are 22 steps allowed, starting at 0.
+
+You change the color of the currently-flooded part, which at the beginning is
+the top left corner.
+
+  Maybe keep a set of flooded tiles, and whenever you change color, we create a
+  set of neighbors, filter by which ones are the color selected, and add them to
+  the flooded tile set.
+
+  When the flooded set contains all the tiles on the board, you win.
+  If you dont succeed at the 22nd turn, you lose.
