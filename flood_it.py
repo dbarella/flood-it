@@ -5,11 +5,12 @@
 """
 
 
+from termcolor import colored
+
 import os
 import pprint
 import random
 import sys
-from termcolor import colored
 
 
 BOARD_WIDTH  = 12
@@ -57,6 +58,9 @@ class Color(object):
   def __str__(self):
     return self.COLORS_TO_OUTPUT[self.color]
 
+  def __repr__(self):
+    return self.color
+
   def __eq__(self, other):
     if type(self) is type(other):
       return self.color == other.color
@@ -85,7 +89,7 @@ class Tile(object):
 
 class Board(object):
 
-  def __init__(self, width, height, flooded_tiles=None):
+  def __init__(self, width, height):
     """Initializes a width-by-height board of Tiles."""
     self._width  = width
     self._height = height
@@ -96,10 +100,10 @@ class Board(object):
         for y in range(height)
         ]
 
-    if flooded_tiles:
-      self.flooded_tiles = flooded_tiles
-    else:
-      self.flooded_tiles = {self.board[0][0]}  # Start with the top left tile
+    # Start with the top left tile
+    starting_tile = self.board[0][0]
+    self.flooded_tiles = {starting_tile}
+    self.flooded_tiles.update(self.find_floodplane(starting_tile.color))
 
   def __len__(self):
     return self._num_tiles
@@ -108,55 +112,60 @@ class Board(object):
     """Returns True if the board is flooded, false otherwise."""
     return len(self.flooded_tiles) == self._num_tiles
 
-  def play(self, color):
+  def flood(self, color):
     """
-    Plays for a round, returning the set of currently flooded tiles.
+    Plays for a round of the game.
 
     !!MUTATES BOARD STATE!!
 
     Args:
       color (Color): The color with which to flood the board this round
-    Returns (set of Tile):
-      Returns the new set of flooded tiles.
     """
-    # This statement does not mutate any state.
-    new_flooded_tiles = self.flood(color)
-
-    # Mutate board state
-    self.flooded_tiles = self.flooded_tiles.union(new_flooded_tiles)
-
-    # Mutate tile state, watch out
+    # Change current flood plane to the new flood color (start flooding)
     for tile in self.flooded_tiles:
       tile.color = color
 
-    return self.flooded_tiles
+    # Find the expanded flood plane.
+    # This statement does not mutate the board state.
+    new_flooded_tiles = self.find_floodplane(color)
 
-  def flood(self, color):
+    # Modify board state to include the newly flooded tiles
+    self.flooded_tiles.update(new_flooded_tiles)
+
+  def find_floodplane(self, color):
     """
     Returns the result of flooding the board with a certain color.
 
     !!Does NOT mutate board state!!
+
+    Runs a BFS starting with the flooded tiles
 
     Args:
       color (Color): The color with which to flood the board this round
     Returns (set of Tile):
       Returns the new set of flooded tiles.
     """
-    return {
-        neighbor for neighbor in self.tiles_adjacent_to(self.flooded_tiles)
-        if neighbor.color == color
-        }
+    # Initialize the BFS queue with the top-left tile
+    queue = [ self.board[0][0] ]
 
-  def tiles_adjacent_to(self, flooded_tiles):
-    """Finds all tiles adjacent to flooded_tiles."""
-    neighbors = set()
+    # Flooded tiles
+    flooded_tiles = set()
 
-    for x, row in enumerate(self.board):
-      for y, tile in enumerate(row):
-        if tile in flooded_tiles:
-          neighbors.update(self.safe_get_neighbors(tile))
+    while queue:
+      tile = queue.pop()
 
-    return neighbors
+      # Add tile if we haven't seen it and the color matches
+      if tile.color == color:
+        flooded_tiles.add(tile)
+
+        # Add the tile's unvisited neighbors
+        queue.extend(
+              [neighbor for neighbor in self.safe_get_neighbors(tile)
+               if neighbor not in flooded_tiles]
+            )
+
+    return flooded_tiles
+
 
   def safe_get_neighbors(self, tile):
     """Safe neighbor lookup for a tile; handles the edge cases and all."""
@@ -168,7 +177,7 @@ class Board(object):
       tmp_x = tile.x + x_offset
       tmp_y = tile.y + y_offset
       if (0 <= tmp_x < self._width and 0 <= tmp_y < self._height):
-        neighbors.append(self.board[tmp_x][tmp_y])
+        neighbors.append(self.board[tmp_y][tmp_x])  # [row][column] resolution
 
     return neighbors
 
@@ -197,6 +206,7 @@ def get_color(prompt=''):
   """Get the flood color for this round from the user."""
   print 'Color options: {0}'.format(Color.COLORS)
 
+  # TODO: Allow abbreviated color names
   user_color = raw_input(prompt)
   while not Color.validate_color(user_color):
     print "THAT AIN'T A VALID COLOR"
@@ -212,6 +222,10 @@ def print_gameover_info(turns, board):
     print 'Nah you lost.'
 
 
+def print_game_stats(turn, board):
+  print 'Turn {0:3d} of {1:3d}'.format(turn, N_TURNS)
+
+
 def main():
   # Clear the screen for the game.
   blit()
@@ -219,14 +233,19 @@ def main():
   # Construct board
   board = Board(width=BOARD_WIDTH, height=BOARD_HEIGHT)
 
-  for turn in range(N_TURNS):
-    blit()
+  # Display the board
+  board.display()
 
-    # Display the board
-    board.display()
+  for turn in range(N_TURNS):
+
+    print_game_stats(turn, board)
 
     # Play a round
-    board.play( get_color('Flood Color: ') )
+    color = get_color('Flood Color: ')
+    board.flood( color )
+
+    blit()
+    board.display()
 
     # Terminate early on a win
     if won(turn, board):
