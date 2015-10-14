@@ -66,8 +66,11 @@ class Color(object):
 
 class Tile(object):
 
-  def __init__(self, color=None):
+  def __init__(self, x, y, color=None):
     """If no color is provided, a random color is generated."""
+    self.x = x
+    self.y = y
+
     if color:
       self.color = color
     else:
@@ -77,7 +80,7 @@ class Tile(object):
     return str(self.color)
 
   def __repr__(self):
-    return repr(self.color)
+    return repr('{0} at ({1}, {2})'.format(self.color, self.x, self.y))
 
 
 class Board(object):
@@ -89,8 +92,8 @@ class Board(object):
     self._num_tiles = width * height
 
     self.board = [
-        [Tile() for _ in range(width)]
-        for _ in range(height)
+        [Tile(x, y) for x in range(width)]
+        for y in range(height)
         ]
 
     if flooded_tiles:
@@ -151,19 +154,19 @@ class Board(object):
     for x, row in enumerate(self.board):
       for y, tile in enumerate(row):
         if tile in flooded_tiles:
-          neighbors.update(self.safe_get_neighbors(x, y, tile))
+          neighbors.update(self.safe_get_neighbors(tile))
 
     return neighbors
 
-  def safe_get_neighbors(self, x, y, tile):
+  def safe_get_neighbors(self, tile):
     """Safe neighbor lookup for a tile; handles the edge cases and all."""
     neighbors = []
 
     # Look at North, South, East, West neighbors (x, y)
     for x_offset, y_offset in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
       # Do the index calculation upfront to avoid redoing it in the 'if'
-      tmp_x = x + x_offset
-      tmp_y = y + y_offset
+      tmp_x = tile.x + x_offset
+      tmp_y = tile.y + y_offset
       if (0 <= tmp_x < self._width and 0 <= tmp_y < self._height):
         neighbors.append(self.board[tmp_x][tmp_y])
 
