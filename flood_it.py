@@ -21,20 +21,20 @@ class Color(object):
 
   COLORS = [
       "red",
-      "white",
-      "orange",
+      "cyan",
+      "red",
       "yellow",
       "green",
       "blue"
       ]
 
   COLORS_TO_OUTPUT = {
-      "red": colored('X', 'red'),
-      "white"  : colored('X', 'white'),
-      "orange": colored('X', 'red'),
-      "yellow": colored('X', 'yellow'),
-      "green" : colored('X', 'green'),
-      "blue"  : colored('X', 'blue')
+      "red"     : colored(' R ', 'red'    , attrs=['bold', 'reverse']),
+      "cyan"    : colored(' C ', 'cyan'   , attrs=['bold', 'reverse']),
+      "magenta" : colored(' M ', 'magenta', attrs=['bold', 'reverse']),
+      "yellow"  : colored(' Y ', 'yellow' , attrs=['bold', 'reverse']),
+      "green"   : colored(' G ', 'green'  , attrs=['bold', 'reverse']),
+      "blue"    : colored(' B ', 'blue'   , attrs=['bold', 'reverse'])
       }
 
   def __init__(self, color=None):
@@ -176,7 +176,7 @@ class Board(object):
     This should eventually be delegated to a standalone display method.
     """
     for row in self.board:
-      print ' '.join("{0:10}".format(str(tile)) for tile in row)
+      print ''.join('{0:3}'.format(str(tile)) for tile in row)
 
 
 def blit():
