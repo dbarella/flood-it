@@ -2,15 +2,18 @@
 """
 
 
+import os
+import pprint
 import random
 import sys
 
 
-BOARD_SIDELENGTH = 12
-N_TURNS = 22
+BOARD_WIDTH  = 12
+BOARD_HEIGHT = 12
+N_TURNS      = 22
 
 
-class Color(object):
+class Color(str):
 
   COLORS = [
       "purple",
@@ -22,9 +25,7 @@ class Color(object):
       ]
 
   def __init__(self, color):
-    if self.validate_color(color):
-      self.color = color
-    else:
+    if not self.validate_color(color):
       raise ValueError('Invalid color {0}'.format(color))
 
   @classmethod
@@ -45,23 +46,30 @@ class Tile(object):
     else:
       self.color = Color.random_color()
 
+  def __str__(self):
+    return str(self.color)[:2]
+
+  def __repr__(self):
+    return repr(self.color)
+
 
 class Board(object):
 
-  def __init__(self, sidelength, flooded_tiles=None):
-    """Initializes a sidelength-by-sidelength board of Tiles."""
+  def __init__(self, width, height, flooded_tiles=None):
+    """Initializes a width-by-height board of Tiles."""
+    self._width  = width
+    self._height = height
+    self._num_tiles = width * height
+
     self.board = [
-        [Tile() for _ in range(sidelength)]
-        for _ in range(sidelength)
+        [Tile() for _ in range(width)]
+        for _ in range(height)
         ]
 
     if flooded_tiles:
       self.flooded_tiles = flooded_tiles
     else:
       self.flooded_tiles = {self.board[0][0]}  # Start with the top left tile
-
-    self._sidelength = sidelength
-    self._num_tiles = sidelength**2
 
   def __len__(self):
     return self._num_tiles
@@ -81,9 +89,16 @@ class Board(object):
     Returns (set of Tile):
       Returns the new set of flooded tiles.
     """
-    self.flooded_tiles = self.flooded_tiles.union(
-        self.flood(color)
-        )
+    # This statement does not mutate any state.
+    new_flooded_tiles = self.flood(color)
+
+    # Mutate board state
+    self.flooded_tiles = self.flooded_tiles.union(new_flooded_tiles)
+
+    # Mutate tile state, watch out
+    for tile in self.flooded_tiles:
+      tile.color = color
+
     return self.flooded_tiles
 
   def flood(self, color):
@@ -98,32 +113,75 @@ class Board(object):
       Returns the new set of flooded tiles.
     """
     return {
-        neighbor for neighbor in self.find_neighbors(self.flooded_tiles)
-        if neighbor.color == new_color
+        neighbor for neighbor in self.tiles_adjacent_to(self.flooded_tiles)
+        if neighbor.color == color
         }
 
-  def find_neighbors(self, flooded_tiles):
-    """Finds all tiles adjacent to the provided flooded_tiles."""
-    neighbors = []
-    for x in range(self._sidelength):
-      for y in range(self._sidelength):
-        pass
+  def tiles_adjacent_to(self, flooded_tiles):
+    """Finds all tiles adjacent to flooded_tiles."""
+    neighbors = set()
 
-    return []  # FIXME
+    for x, row in enumerate(self.board):
+      for y, tile in enumerate(row):
+        neighbors.update(self.safe_get_neighbors(x, y, tile))
+
+    return neighbors
+
+  def safe_get_neighbors(self, x, y, tile):
+    """Safe neighbor lookup for a tile; handles the edge cases and all."""
+    neighbors = []
+
+    # Look at North, South, East, West neighbors (x, y)
+    for x_offset, y_offset in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+      # Do the index calculation upfront to avoid redoing it in the 'if'
+      tmp_x = x + x_offset
+      tmp_y = y + y_offset
+      if (0 <= tmp_x < self._width and 0 <= tmp_y < self._height):
+        neighbors.append(self.board[tmp_x][tmp_y])
+
+    return neighbors
+
+  def display(self):
+    """
+    Custom display method, let the board display itself.
+
+    This should eventually be delegated to a standalone display method.
+    """
+    for row in self.board:
+      print ' '.join("{0:10}".format(tile) for tile in row)
 
 
 def main():
+  blit()
+  # print 'Welcome to a terrible flood-it knockoff.'
+
   # Construct board
-  board = Board(BOARD_SIDELENGTH)
+  board = Board(width=BOARD_WIDTH, height=BOARD_HEIGHT)
 
   for turn in range(N_TURNS):
+    # Display the board
+    board.display()
+
+    # Play a round
+    print 'Color options: {0}'.format(Color.COLORS)
     color = get_color('Flood Color: ')
     board.play(color)
+
+    # Check for win
     if won(turn, board):
       print_gameover_info(turn, board)
+      sys.exit(0)
+
+    blit()
 
   # Otherwise, the player lost
   print_gameover_info(turn, board)
+
+
+def blit():
+  """Blit the screen"""
+  # Blit the screen
+  _ = os.system('clear')
 
 
 def won(turns, board):
