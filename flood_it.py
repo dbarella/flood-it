@@ -21,21 +21,21 @@ N_TURNS      = 22
 class Color(object):
 
   COLORS = [
-      "red",
-      "cyan",
-      "red",
-      "yellow",
-      "green",
-      "blue"
+      'r',
+      'c',
+      'm',
+      'y',
+      'g',
+      'b'
       ]
 
   COLORS_TO_OUTPUT = {
-      "red"     : colored(' R ', 'red'    , attrs=['bold', 'reverse']),
-      "cyan"    : colored(' C ', 'cyan'   , attrs=['bold', 'reverse']),
-      "magenta" : colored(' M ', 'magenta', attrs=['bold', 'reverse']),
-      "yellow"  : colored(' Y ', 'yellow' , attrs=['bold', 'reverse']),
-      "green"   : colored(' G ', 'green'  , attrs=['bold', 'reverse']),
-      "blue"    : colored(' B ', 'blue'   , attrs=['bold', 'reverse'])
+      'r' : colored(' R ', 'red'    , attrs=['bold', 'reverse']),
+      'c' : colored(' C ', 'cyan'   , attrs=['bold', 'reverse']),
+      'm' : colored(' M ', 'magenta', attrs=['bold',          ]),
+      'y' : colored(' Y ', 'yellow' , attrs=['bold', 'reverse']),
+      'g' : colored(' G ', 'green'  , attrs=['bold', 'reverse']),
+      'b' : colored(' B ', 'blue'   , attrs=['bold', 'reverse'])
       }
 
   def __init__(self, color=None):
@@ -207,7 +207,7 @@ def get_color(prompt=''):
   print 'Color options: {0}'.format(Color.COLORS)
 
   # TODO: Allow abbreviated color names
-  user_color = raw_input(prompt)
+  user_color = raw_input(prompt).lower()
   while not Color.validate_color(user_color):
     print "THAT AIN'T A VALID COLOR"
     user_color = raw_input(prompt)
@@ -219,7 +219,7 @@ def print_gameover_info(turns, board):
   if won(turns, board):
     print 'You won.'
   else:
-    print 'Nah you lost.'
+    print 'Nah, you lost.'
 
 
 def print_game_stats(turn, board):
@@ -241,8 +241,7 @@ def main():
     print_game_stats(turn, board)
 
     # Play a round
-    color = get_color('Flood Color: ')
-    board.flood( color )
+    board.flood( get_color('Flood Color: ') )
 
     blit()
     board.display()
