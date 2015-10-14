@@ -1,7 +1,8 @@
 #!/usr/bin/env python
  # -*- coding: utf-8 -*-
 
-"""A raucous ripoff of Flood-It! 2, a game I liked to play on my iphone.
+"""
+A raucous ripoff of Flood-It! 2, a game I like to play on my iPhone.
 """
 
 
