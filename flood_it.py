@@ -165,6 +165,8 @@ def won(turns, board):
 
 def get_color(prompt=''):
   """Get the flood color for this round from the user."""
+  print 'Color options: {0}'.format(Color.COLORS)
+
   user_color = raw_input(prompt)
   while not Color.validate_color(user_color):
     print "THAT AIN'T A VALID COLOR"
