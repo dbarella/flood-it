@@ -46,79 +46,89 @@ class Tile(object):
       self.color = Color.random_color()
 
 
+class Board(object):
+
+  def __init__(self, sidelength, flooded_tiles=None):
+    """Initializes a sidelength-by-sidelength board of Tiles."""
+    self.board = [
+        [Tile() for _ in range(sidelength)]
+        for _ in range(sidelength)
+        ]
+
+    if flooded_tiles:
+      self.flooded_tiles = flooded_tiles
+    else:
+      self.flooded_tiles = {self.board[0][0]}  # Start with the top left tile
+
+    self._sidelength = sidelength
+    self._num_tiles = sidelength**2
+
+  def __len__(self):
+    return self._num_tiles
+
+  def is_flooded(self):
+    """Returns True if the board is flooded, false otherwise."""
+    return len(self.flooded_tiles) == self._num_tiles
+
+  def play(self, color):
+    """
+    Plays for a round, returning the set of currently flooded tiles.
+
+    !!MUTATES BOARD STATE!!
+
+    Args:
+      color (Color): The color with which to flood the board this round
+    Returns (set of Tile):
+      Returns the new set of flooded tiles.
+    """
+    self.flooded_tiles = self.flooded_tiles.union(
+        self.flood(color)
+        )
+    return self.flooded_tiles
+
+  def flood(self, color):
+    """
+    Returns the result of flooding the board with a certain color.
+
+    !!Does NOT mutate board state!!
+
+    Args:
+      color (Color): The color with which to flood the board this round
+    Returns (set of Tile):
+      Returns the new set of flooded tiles.
+    """
+    return {
+        neighbor for neighbor in self.find_neighbors(self.flooded_tiles)
+        if neighbor.color == new_color
+        }
+
+  def find_neighbors(self, flooded_tiles):
+    """Finds all tiles adjacent to the provided flooded_tiles."""
+    neighbors = []
+    for x in range(self._sidelength):
+      for y in range(self._sidelength):
+        pass
+
+    return []  # FIXME
+
+
 def main():
   # Construct board
-  board = construct_board(BOARD_SIDELENGTH)
-  flooded_tiles = set(board[0][0])  # Start with the top left tile
+  board = Board(BOARD_SIDELENGTH)
 
   for turn in range(N_TURNS):
-    color = get_color('Flood Color:')
-    flooded_tiles = play(color, flooded_tiles, board)
-    if board_flooded(flooded_tiles, board):  # Win condition
-      print_gameover_info(turn, flooded_tiles, board, won=True)
+    color = get_color('Flood Color: ')
+    board.play(color)
+    if won(turn, board):
+      print_gameover_info(turn, board)
 
   # Otherwise, the player lost
-  print_gameover_info(turn, flooded_tiles, board, won=False)
+  print_gameover_info(turn, board)
 
 
-def construct_board(sidelength):
-  """Returns a sidelength-by-sidelength board of Tiles."""
-  return [
-      [Tile() for _ in range(sidelength)]
-      for _ in range(sidelength)
-      ]
-
-
-def board_flooded(flooded_tiles, board):
-  """Returns True if the board is flooded, false otherwise."""
-  return len(flooded_tiles) == BOARD_SIDELENGTH**2
-
-
-def won(turns, flooded_tiles, board):
+def won(turns, board):
   """Returns True if the game is in a win state."""
-  return board_flooded(flooded_tiles, board) and turns < N_TURNS
-
-
-def play(color, flooded_tiles, board):
-  """
-  Plays for a round, returning the set of currently flooded tiles.
-
-  Args:
-    color (Color): The color with which to flood the board this round
-    flooded_tiles (set of Tile): The set of flooded tiles
-    board (list of (list of Tile)): The game board
-  Returns (set of Tile):
-    Returns the new set of flooded tiles.
-  """
-  return flooded_tiles.union(
-      flood(color, flooded_tiles, board)
-      )
-
-
-def flood(color, flooded_tiles, board):
-  """
-  Floods the board with a color, returning the resulting set of flooded tiles.
-
-  Args:
-    color (Color): The color with which to flood the board this round
-    flooded_tiles (set of Tile): The set of flooded tiles
-    board (list of (list of Tile)): The game board
-  Returns (set of Tile):
-    Returns the new set of flooded tiles.
-  """
-  return {
-      neighbor for neighbor in find_neighbors(flooded_tiles, board)
-      if neighbor.color == new_color
-      }
-
-
-def find_neighbors(flooded_tiles, board):
-  """Finds all tiles adjacent to the currently flooded tiles."""
-  neighbors = []
-  for x in range(BOARD_SIDELENGTH):
-    for y in range(BOARD_SIDELENGTH):
-
-  return []  # FIXME
+  return turns < N_TURNS and board.is_flooded()
 
 
 def get_color(prompt=''):
@@ -131,8 +141,8 @@ def get_color(prompt=''):
   return Color(user_color)
 
 
-def print_gameover_info(turns, flooded_tiles, board, won=False):
-  if won:
+def print_gameover_info(turns, board):
+  if won(turns, board):
     print 'You won.'
   else:
     print 'Nah you lost.'
