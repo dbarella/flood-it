@@ -123,7 +123,8 @@ class Board(object):
 
     for x, row in enumerate(self.board):
       for y, tile in enumerate(row):
-        neighbors.update(self.safe_get_neighbors(x, y, tile))
+        if tile in flooded_tiles:
+          neighbors.update(self.safe_get_neighbors(x, y, tile))
 
     return neighbors
 
