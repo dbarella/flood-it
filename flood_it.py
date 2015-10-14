@@ -152,33 +152,6 @@ class Board(object):
       print ' '.join("{0:10}".format(tile) for tile in row)
 
 
-def main():
-  blit()
-  # print 'Welcome to a terrible flood-it knockoff.'
-
-  # Construct board
-  board = Board(width=BOARD_WIDTH, height=BOARD_HEIGHT)
-
-  for turn in range(N_TURNS):
-    # Display the board
-    board.display()
-
-    # Play a round
-    print 'Color options: {0}'.format(Color.COLORS)
-    color = get_color('Flood Color: ')
-    board.play(color)
-
-    # Check for win
-    if won(turn, board):
-      print_gameover_info(turn, board)
-      sys.exit(0)
-
-    blit()
-
-  # Otherwise, the player lost
-  print_gameover_info(turn, board)
-
-
 def blit():
   """Blit the screen"""
   # Blit the screen
@@ -205,6 +178,29 @@ def print_gameover_info(turns, board):
     print 'You won.'
   else:
     print 'Nah you lost.'
+
+
+def main():
+  # Clear the screen for the game.
+  blit()
+
+  # Construct board
+  board = Board(width=BOARD_WIDTH, height=BOARD_HEIGHT)
+
+  for turn in range(N_TURNS):
+    blit()
+
+    # Display the board
+    board.display()
+
+    # Play a round
+    board.play( get_color('Flood Color: ') )
+
+    # Terminate early on a win
+    if won(turn, board):
+      break
+
+  print_gameover_info(turn, board)
 
 
 if __name__ == '__main__':
