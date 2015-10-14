@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+ # -*- coding: utf-8 -*-
+
 """A raucous ripoff of Flood-It! 2, a game I liked to play on my iphone.
 """
 
@@ -6,6 +9,7 @@ import os
 import pprint
 import random
 import sys
+from termcolor import colored
 
 
 BOARD_WIDTH  = 12
@@ -13,28 +17,51 @@ BOARD_HEIGHT = 12
 N_TURNS      = 22
 
 
-class Color(str):
+class Color(object):
 
   COLORS = [
-      "purple",
-      "pink",
+      "red",
+      "white",
       "orange",
       "yellow",
       "green",
       "blue"
       ]
 
-  def __init__(self, color):
-    if not self.validate_color(color):
+  COLORS_TO_OUTPUT = {
+      "red": colored('X', 'red'),
+      "white"  : colored('X', 'white'),
+      "orange": colored('X', 'red'),
+      "yellow": colored('X', 'yellow'),
+      "green" : colored('X', 'green'),
+      "blue"  : colored('X', 'blue')
+      }
+
+  def __init__(self, color=None):
+    if not color:
+      self.color = self.random_color()
+    elif self.validate_color(color):
+      self.color = color
+    else:
       raise ValueError('Invalid color {0}'.format(color))
 
   @classmethod
   def random_color(cls):
+    """Returns a random color name."""
     return random.choice(cls.COLORS)
 
   @classmethod
   def validate_color(cls, color):
     return color in cls.COLORS
+
+  def __str__(self):
+    return self.COLORS_TO_OUTPUT[self.color]
+
+  def __eq__(self, other):
+    if type(self) is type(other):
+      return self.color == other.color
+    else:
+      return False
 
 
 class Tile(object):
@@ -44,10 +71,10 @@ class Tile(object):
     if color:
       self.color = color
     else:
-      self.color = Color.random_color()
+      self.color = Color()
 
   def __str__(self):
-    return str(self.color)[:2]
+    return str(self.color)
 
   def __repr__(self):
     return repr(self.color)
@@ -149,7 +176,7 @@ class Board(object):
     This should eventually be delegated to a standalone display method.
     """
     for row in self.board:
-      print ' '.join("{0:10}".format(tile) for tile in row)
+      print ' '.join("{0:10}".format(str(tile)) for tile in row)
 
 
 def blit():
