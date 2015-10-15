@@ -87,6 +87,10 @@ class Tile(object):
   def __repr__(self):
     return repr('{0} at ({1}, {2})'.format(self.color, self.x, self.y))
 
+  def flood(self, color):
+    """Floods this tile with a color (mostly sugar, otherwise just a setter)"""
+    self.color = color
+
 
 class Board(object):
 
@@ -124,7 +128,7 @@ class Board(object):
     """
     # Change current flood plane to the new flood color (start flooding)
     for tile in self.flooded_tiles:
-      tile.color = color
+      tile.flood(color)
 
     # This statement does not mutate the board state.
     new_flooded_tiles = self.find_floodplane(color)
