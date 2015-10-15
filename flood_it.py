@@ -1,5 +1,5 @@
 #!/usr/bin/env python
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 A raucous ripoff of Flood-It! 2, a game I like to play on my iPhone.
@@ -47,15 +47,6 @@ class Color(object):
     else:
       raise ValueError('Invalid color {0}'.format(color))
 
-  @classmethod
-  def random_color(cls):
-    """Returns a random color name."""
-    return random.choice(cls.COLORS)
-
-  @classmethod
-  def validate_color(cls, color):
-    return color in cls.COLORS
-
   def __str__(self):
     return self.COLORS_TO_OUTPUT[self.color]
 
@@ -67,6 +58,15 @@ class Color(object):
       return self.color == other.color
     else:
       return False
+
+  @classmethod
+  def random_color(cls):
+    """Returns a random color name."""
+    return random.choice(cls.COLORS)
+
+  @classmethod
+  def validate_color(cls, color):
+    return color in cls.COLORS
 
 
 class Tile(object):
@@ -126,11 +126,10 @@ class Board(object):
     for tile in self.flooded_tiles:
       tile.color = color
 
-    # Find the expanded flood plane.
     # This statement does not mutate the board state.
     new_flooded_tiles = self.find_floodplane(color)
 
-    # Modify board state to include the newly flooded tiles
+    # Modify board state to include the newly flooded tiles (finish flooding)
     self.flooded_tiles.update(new_flooded_tiles)
 
   def find_floodplane(self, color):
@@ -143,23 +142,23 @@ class Board(object):
 
     Args:
       color (Color): The color with which to flood the board this round
+
     Returns (set of Tile):
-      Returns the new set of flooded tiles.
+      The new set of flooded tiles.
     """
     # Initialize the BFS queue with the top-left tile
     queue = [ self.board[0][0] ]
 
-    # Flooded tiles
     flooded_tiles = set()
 
     while queue:
       tile = queue.pop()
 
-      # Add tile if we haven't seen it and the color matches
+      # If the color of the tile matches the flooding color, add it
       if tile.color == color:
         flooded_tiles.add(tile)
 
-        # Add the tile's unvisited neighbors
+        # Add the tile's unflooded neighbors
         queue.extend(
               [neighbor for neighbor in self.safe_get_neighbors(tile)
                if neighbor not in flooded_tiles]
@@ -207,7 +206,6 @@ def get_color(prompt=''):
   """Get the flood color for this round from the user."""
   print 'Color options: {0}'.format(Color.COLORS)
 
-  # TODO: Allow abbreviated color names
   user_color = raw_input(prompt).lower()
   while not Color.validate_color(user_color):
     print "THAT AIN'T A VALID COLOR"
