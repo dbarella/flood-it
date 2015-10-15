@@ -51,7 +51,7 @@ class Color(object):
     return self.COLORS_TO_OUTPUT[self.color]
 
   def __repr__(self):
-    return self.color
+    return repr(self.color)
 
   def __eq__(self, other):
     if type(self) is type(other):
