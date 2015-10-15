@@ -33,7 +33,7 @@ class Color(object):
   COLORS_TO_OUTPUT = {
       'r' : colored(' R ', 'red'    , attrs=['bold', 'reverse']),
       'c' : colored(' C ', 'cyan'   , attrs=['bold', 'reverse']),
-      'm' : colored(' M ', 'magenta', attrs=['bold',          ]),
+      'm' : colored(' M ', 'magenta', attrs=['bold', 'reverse']),
       'y' : colored(' Y ', 'yellow' , attrs=['bold', 'reverse']),
       'g' : colored(' G ', 'green'  , attrs=['bold', 'reverse']),
       'b' : colored(' B ', 'blue'   , attrs=['bold', 'reverse'])
