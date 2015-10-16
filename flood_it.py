@@ -11,7 +11,6 @@ from termcolor import colored
 import os
 import pprint
 import random
-import sys
 
 
 BOARD_WIDTH  = 12
@@ -21,14 +20,14 @@ N_TURNS      = 22
 
 class Color(object):
 
-  COLORS = [
+  COLORS = (
       'r',
       'c',
       'm',
       'y',
       'g',
       'b'
-      ]
+      )
 
   COLORS_TO_OUTPUT = {
       'r' : colored(' R ', 'red'    , attrs=['bold', 'reverse']),
